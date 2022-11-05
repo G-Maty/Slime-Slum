@@ -12,9 +12,17 @@ public class Player_Move: MonoBehaviour
     public float jumpForce = 200f;
     private bool isJump = false; //ジャンプ中かどうか
     private bool isup = false; //張り付き中かどうか
+    private bool isRight;
+    private bool isAttack = false; //攻撃中かどうか
     private bool damage = false;
 
+    //shot関係
+    public GameObject bullet;
+    public Transform shotPoint;
+    float coolTime = 0.2f; //待機時間
+    float leftCoolTime; //待機している時間
 
+    //接地判定関係
     [SerializeField] private LayerMask groundLayer; //for GroundCheck
 
 
@@ -32,6 +40,7 @@ public class Player_Move: MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
+        isRight = true;
     }
 
     private void FixedUpdate()
@@ -42,9 +51,6 @@ public class Player_Move: MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space) && !isJump) //スペースが押されて、ジャンプ中じゃなければ
-        {
-        }
         Movement(); //動く
     }
 
@@ -52,63 +58,96 @@ public class Player_Move: MonoBehaviour
     {
         float x = Input.GetAxis("Horizontal");
         //float y = Input.GetAxis("Vertical");
-        
-        if (x > 0)
-        {
-            transform.localScale = new Vector3(1.0f, 1.0f, 1);
-        }
-        if (x < 0)
-        {
-            transform.localScale = new Vector3(-1.0f, 1.0f, 1);
-        }
+
+        Direction(x);
         Jump(); //ジャンプ
+        if (!isJump)
+        {
+            shot(); //ショット
+        }
         anim.SetFloat("run", Mathf.Abs(x)); //runアニメーション
         rb.velocity = new Vector2(x * moveSpeed, rb.velocity.y); //移動の実行
+        if (isAttack) //攻撃中は動きを止める
+        {
+            rb.velocity = new Vector2(0, 0);
+        }
+    }
+
+    void Direction(float inputX) //スケールを変える方法だと弾が右方向にしか飛ばないため
+    {
+        //右向き左入力で180度回転、左向き右入力で180度回転
+        if (isRight && inputX < 0)
+        {
+            transform.Rotate(0, 180f, 0);
+            isRight = false;
+        }
+        if (!isRight && inputX > 0)
+        {
+            transform.Rotate(0, 180f, 0);
+            isRight = true;
+        }
     }
 
     void Jump()
     {
-        bool isGround = CheckGround();
         bool isground_up = checkground_up();
         bool isground_down = checkground_down();
+        //float y = Input.GetAxis("Vertical");
 
-
-        if(!isground_up && isground_down) //下接地
+        if (!isground_up && isground_down) //下接地中
         {
-            if (Input.GetKeyDown(KeyCode.W) && !isup) //空中ではジャンプできない
+            if (Input.GetKeyDown(KeyCode.W) && !isup)
             {
-                anim.SetBool("landing_down", false);
                 isJump = true;
+                anim.SetBool("landing_down", false);
                 anim.SetTrigger("jump");
                 rb.gravityScale = -3f;
                 rb.AddForce(transform.up * jumpForce); //力を加えてジャンプ
                 isup = true;
             }
-            if (!isup)
+            if (!isup) //ジャンプした瞬間の誤作動を防止
             {
-                anim.SetBool("landing_down",true);
+                isJump = false;
+                anim.SetBool("landing_down",true); //着地アニメーション
             }
         }
-        if(isground_up && !isground_down) //上接地
+        if(isground_up && !isground_down) //上接地中
         {
             if (Input.GetKeyDown(KeyCode.S) && isup) //空中ではジャンプできない
             {
-                anim.SetBool("landing_up",false);
                 isJump = true;
+                anim.SetBool("landing_up",false);
                 anim.SetTrigger("jump");
                 rb.gravityScale = 3f;
                 rb.AddForce(transform.up * -jumpForce); //力を加えてジャンプ
                 isup = false;
             }
-            if (isup)
+            if (isup) //ジャンプした瞬間の誤作動を防止
             {
-                anim.SetBool("landing_up",true);
+                isJump = false;
+                anim.SetBool("landing_up",true); //着地アニメーション
+            }
+        }       
+    }
+
+    private void shot()
+    {
+        leftCoolTime -= Time.deltaTime; //クールタイム更新(shot関数は毎Update呼ばれる)
+        if (leftCoolTime <= 0) //残り待機時間が0秒以下のとき
+        {
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                isAttack = true;
+                anim.SetTrigger("shot"); //ショットアニメーション
+                Instantiate(bullet, shotPoint.position, transform.rotation); //弾を前方に発射する
+                leftCoolTime = coolTime; //クールタイム発生
             }
         }
+    }
 
-
-            
-        Debug.Log(isJump);
+    public void shotEnd() //shotアニメーションの最終フレームで利用
+    {
+        isAttack = false;
     }
 
     private void Damage()
