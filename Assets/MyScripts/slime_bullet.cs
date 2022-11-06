@@ -7,6 +7,7 @@ public class slime_bullet : MonoBehaviour
     [SerializeField] GameObject impact; //敵にぶつかったときのエフェクト
     [SerializeField] float speed = 10f; //弾速
     Rigidbody2D rb;
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -19,10 +20,15 @@ public class slime_bullet : MonoBehaviour
         {
             //作成したコードEnemyクラス型の空変数enemを作成し、ぶつかったオブジェクトのコンポーネントEnemyクラスを取得する
             Enemy enem = collision.GetComponent<Enemy>();
+            Instantiate(impact, transform.position, transform.rotation); //敵にぶつかったときエフェクトを出す
+            Destroy(gameObject); //敵にあたったら弾を消す
             enem.OnDamage();     //OnDamage関数を呼び出す
         }
-        Debug.Log("hit");
-        Instantiate(impact, transform.position, transform.rotation); //なにかにぶつかったときエフェクトを出す
-        Destroy(gameObject); //敵にあたったら弾を消す
+        else if (collision.gameObject.layer == LayerMask.NameToLayer("Ground"))
+        {
+            Instantiate(impact, transform.position, transform.rotation); //敵にぶつかったときエフェクトを出す
+            Destroy(gameObject); //敵にあたったら弾を消す
+        }
+        //Debug.Log("hit");
     }
 }
