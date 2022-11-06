@@ -1,10 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
-/*
- *　移動・ジャンプ・接近攻撃の見本コード
- */
 
 public class Player_Move: MonoBehaviour
 {
@@ -25,14 +23,18 @@ public class Player_Move: MonoBehaviour
     //接地判定関係
     [SerializeField] private LayerMask groundLayer; //for GroundCheck
 
-
-
     //レイヤーにEnemyを追加
     public LayerMask enemyLayer; //特定のレイヤーでのみコライダーを検知するフィルター(敵か敵じゃないかの区別)
     private Rigidbody2D rb;
     private SpriteRenderer spriteRenderer;
 
-    Animator anim;
+    private Animator anim;
+
+    public UnityAction warpCheckpoint; //ダメージ処理(デリゲート)
+    public UnityAction<GameObject> checkPoint_Update;
+
+
+    
 
     // Start is called before the first frame update
     void Start()
@@ -58,19 +60,27 @@ public class Player_Move: MonoBehaviour
     {
         float x = Input.GetAxis("Horizontal");
         //float y = Input.GetAxis("Vertical");
+        if (!damage) //ダメージ受けていないときに行動可能
+        {
+            Direction(x);
+            Jump(); //ジャンプ
+            if (!isJump)
+            {
+                shot(); //ショット
+            }
+            anim.SetFloat("run", Mathf.Abs(x)); //runアニメーション
+            rb.velocity = new Vector2(x * moveSpeed, rb.velocity.y); //移動の実行
+            if (isAttack) //攻撃中は動きを止める
+            {
+                rb.velocity = new Vector2(0, 0);
+            }
+        }
+        else //ダメージ受けているときにその場に硬直
+        {
+            rb.velocity = Vector2.zero;
+            rb.gravityScale = 0;
+        }
 
-        Direction(x);
-        Jump(); //ジャンプ
-        if (!isJump)
-        {
-            shot(); //ショット
-        }
-        anim.SetFloat("run", Mathf.Abs(x)); //runアニメーション
-        rb.velocity = new Vector2(x * moveSpeed, rb.velocity.y); //移動の実行
-        if (isAttack) //攻撃中は動きを止める
-        {
-            rb.velocity = new Vector2(0, 0);
-        }
     }
 
     void Direction(float inputX) //スケールを変える方法だと弾が右方向にしか飛ばないため
@@ -150,6 +160,8 @@ public class Player_Move: MonoBehaviour
         isAttack = false;
     }
 
+    //Damage()では主に無敵時間とダメージアニメーションの実装
+    //具体的なダメージ処理はDamageTimer中のonDeadに登録済み(デリゲート)
     private void Damage()
     {
         //既にダメージ状態（＝無敵時間中）なら終了
@@ -158,9 +170,6 @@ public class Player_Move: MonoBehaviour
             return;
         }
         StartCoroutine("DamageTimer");
-        /*
-         * ダメージ処理
-         */
     }
 
     //ダメージを受けた瞬間の無敵時間のタイマー
@@ -174,14 +183,16 @@ public class Player_Move: MonoBehaviour
         damage = true;
         //anim.SetTrigger("damage");
         //無敵時間中の点滅
-        for (int i = 0; i < 10; i++)
+        for (int i = 0; i < 10; i++) //1秒
         {
-            spriteRenderer.enabled = false;
+            spriteRenderer.enabled = false; //無色点滅
             yield return new WaitForSeconds(0.05f);
             spriteRenderer.enabled = true;
             yield return new WaitForSeconds(0.05f);
         }
         damage = false;
+        //ダメージ処理
+        warpCheckpoint?.Invoke();
     }
 
     //接地チェック
@@ -247,4 +258,21 @@ public class Player_Move: MonoBehaviour
             return true;
         }
     }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.gameObject.CompareTag("Respawn"))
+        {
+            checkPoint_Update?.Invoke(collision.gameObject);
+        }
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("Trap"))
+        {
+            Damage();
+        }
+    }
+
 }

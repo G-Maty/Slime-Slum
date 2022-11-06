@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 9e36ec2d2c1495a4fbbc4490ec498e1d
+guid: 2ff2770d487faf546a98e5ec84245267
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -116,43 +116,127 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: poison_0
+      name: checkPoint_check_0
       rect:
         serializedVersion: 2
-        x: 32
+        x: 7
         y: 0
-        width: 32
+        width: 18
         height: 32
-      alignment: 0
-      pivot: {x: 0, y: 0}
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: c13978d4a80c47f45b10739e7fdbe650
-      internalID: -605011672
+      spriteID: 9af501824c84cd74ba022c296a00cb81
+      internalID: -2131089512
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: poison_1
+      name: checkPoint_check_1
       rect:
         serializedVersion: 2
-        x: 0
+        x: 39
         y: 0
-        width: 32
+        width: 18
         height: 32
-      alignment: 0
-      pivot: {x: 0, y: 0}
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ea95723a85ede14498bfbe79e5151a1e
-      internalID: 1385487981
+      spriteID: 64025f3f80caa5e43936820d6b84907c
+      internalID: 2105795727
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: checkPoint_check_2
+      rect:
+        serializedVersion: 2
+        x: 71
+        y: 0
+        width: 18
+        height: 31
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cc31364cb9655ec419a294d8d2d37d49
+      internalID: -392609873
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: checkPoint_check_3
+      rect:
+        serializedVersion: 2
+        x: 103
+        y: 0
+        width: 18
+        height: 31
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: df549d56eac70114ab9c87bcf804ff89
+      internalID: -956909582
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: checkPoint_check_4
+      rect:
+        serializedVersion: 2
+        x: 135
+        y: 0
+        width: 18
+        height: 29
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 545a7492ea3831a459391e04738596de
+      internalID: -1317940663
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: checkPoint_check_5
+      rect:
+        serializedVersion: 2
+        x: 167
+        y: 0
+        width: 18
+        height: 32
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: be63f584676ba3d489deda80c5d652b1
+      internalID: -680759707
       vertices: []
       indices: 
       edges: []
@@ -168,8 +252,12 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      poison_0: -605011672
-      poison_1: 1385487981
+      checkPoint_check_2: -392609873
+      checkPoint_check_3: -956909582
+      checkPoint_check_1: 2105795727
+      checkPoint_check_5: -680759707
+      checkPoint_check_4: -1317940663
+      checkPoint_check_0: -2131089512
   spritePackingTag: 
   pSDRemoveMatte: 0
   pSDShowRemoveMatteOption: 0
