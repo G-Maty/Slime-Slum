@@ -7,7 +7,7 @@ public class VCswitch : MonoBehaviour
 {
     private CinemachineBrain cmBrain;
 
-    private void OnTriggerEnter2D(Collider2D collision)
+    private void OnTriggerStay2D(Collider2D collision)
     {
         if (!collision.CompareTag("Player"))
         {
@@ -19,6 +19,5 @@ public class VCswitch : MonoBehaviour
 
         current.Priority = 10; //ŒÃ‚¢•û‚ÌVC‚ğƒIƒt‚É‚·‚é
         this.GetComponent<CinemachineVirtualCamera>().Priority = 100; //¡‚¢‚éVC‚ğƒIƒ“‚É‚·‚é
-
     }
 }
