@@ -14,7 +14,7 @@ public class slime_bullet : MonoBehaviour
         rb.velocity = transform.right * speed; //‹Ê‚ğ”ò‚Î‚·
     }
 
-    private void OnTriggerEnter2D(Collider2D collision)
+    private void OnTriggerEnter2D(Collider2D collision) //’eŠÛ‚Í•Ç‚Æ“G‚É‚Ì‚İÕ“Ë
     {
         if (collision.tag == "Enemy")
         {

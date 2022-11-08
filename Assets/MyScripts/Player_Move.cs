@@ -13,6 +13,7 @@ public class Player_Move: MonoBehaviour
     private bool isRight;
     private bool isAttack = false; //攻撃中かどうか
     private bool damage = false;
+    private float previousGravityScale;
 
     //shot関係
     public GameObject bullet;
@@ -56,6 +57,22 @@ public class Player_Move: MonoBehaviour
         Movement(); //動く
     }
 
+    //プレイヤーを停止（これ単体では１フレームのみ）
+    //この関数を使ったあと、スクリプトをenable = falseにすれば止まる。
+    public void Freeze_player() 
+    {
+        previousGravityScale = rb.gravityScale;
+        rb.velocity = Vector2.zero;
+        rb.gravityScale = 0;
+    }
+
+    //プレイヤーの停止解除（これ単体では１フレームのみ）
+    //この関数を使う前にスクリプトをenable = trueにするのを忘れずに！
+    public void Unzip_player() //Freeze_playerとセットで使うのが好ましい
+    {
+        rb.gravityScale = previousGravityScale;
+    }
+
     void Movement()
     {
         float x = Input.GetAxis("Horizontal");
@@ -77,8 +94,7 @@ public class Player_Move: MonoBehaviour
         }
         else //ダメージ受けているときにその場に硬直
         {
-            rb.velocity = Vector2.zero;
-            rb.gravityScale = 0;
+            Freeze_player();
         }
 
     }
