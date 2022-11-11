@@ -77,6 +77,20 @@ public class Player_Move: MonoBehaviour
     {
         float x = Input.GetAxis("Horizontal");
         //float y = Input.GetAxis("Vertical");
+
+        Debug.Log(rb.velocity.y);
+        if(Mathf.Abs(rb.velocity.y) > 15f) //y軸の速度制限
+        {
+            if(rb.velocity.y > 0)
+            {
+                rb.velocity = new Vector2(x * moveSpeed, 15f);
+            }
+            else
+            {
+                rb.velocity = new Vector2(x * moveSpeed, -15f);
+            }
+        }
+
         if (!damage) //ダメージ受けていないときに行動可能
         {
             Direction(x);
