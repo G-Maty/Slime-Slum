@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
+/*
+ * プレイヤーの移動・アニメーション・ダメージ判定
+ */
+
 
 public class Player_Move: MonoBehaviour
 {
@@ -78,7 +82,6 @@ public class Player_Move: MonoBehaviour
         float x = Input.GetAxis("Horizontal");
         //float y = Input.GetAxis("Vertical");
 
-        Debug.Log(rb.velocity.y);
         if(Mathf.Abs(rb.velocity.y) > 15f) //y軸の速度制限
         {
             if(rb.velocity.y > 0)

@@ -29,22 +29,22 @@ public class ncpController : MonoBehaviour
 
     IEnumerator Talk()
     {
-        if (isTalking)
+        if (isTalking) //すでに会話イベント中ならbreak
         {
             yield break;
         }
+        //会話中のプレイヤーの動きを制限するため
         player_move = GameObject.FindGameObjectWithTag("Player").GetComponent<Player_Move>();
 
         isTalking = true;
-        player_move.Freeze_player();
-        player_move.enabled = false;
-        //フローチャートにメッセージを送信してブロックを開始
-        flowChart.SendFungusMessage(message);
-        //ブロックが終了するまで待つ
-        yield return new WaitUntil(() => flowChart.GetExecutingBlocks().Count == 0);
+        player_move.Freeze_player(); //Player硬直
+        player_move.enabled = false; //移動を制限
 
-        isTalking = false;
-        player_move.enabled = true;
-        player_move.Unzip_player();
+        flowChart.SendFungusMessage(message); //フローチャートにメッセージを送信して特定のイベント（ブロック）開始
+        yield return new WaitUntil(() => flowChart.GetExecutingBlocks().Count == 0); //イベント（ブロック）が終了するまで待つ
+
+        isTalking = false; 
+        player_move.enabled = true; //移動の制限解除
+        player_move.Unzip_player(); //Player解凍（以前の重力等を引き継ぎ）
     }
 }
