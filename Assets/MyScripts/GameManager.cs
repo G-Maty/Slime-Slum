@@ -8,7 +8,8 @@ public class GameManager : MonoBehaviour
     public GameObject PlayerPref;
     private GameObject OperatingPlayer;
     private Player_Move player_move;
-    private Stack<Transform> RespawnPointStack = new Stack<Transform>();
+    //private Stack<Transform> RespawnPointStack = new Stack<Transform>();
+    private Transform RespawnPoint_memory;
     private CinemachineVirtualCamera RespawnPointVC = null;
     private bool iswarp = false;
 
@@ -46,26 +47,28 @@ public class GameManager : MonoBehaviour
     public void checkPoint_Update(GameObject checkpoint) //チェックポイントのアップデート処理
     {
         checkpoint.transform.GetChild(0).gameObject.SetActive(true); //最新ポイントの点火
-        if (RespawnPointStack.Count != 0 && checkpoint != RespawnPointStack.Peek().gameObject)
+        //if (RespawnPointStack.Count != 0 && checkpoint != RespawnPointStack.Peek().gameObject)
+        if(RespawnPoint_memory != null && checkpoint != RespawnPoint_memory.gameObject)
         {
-            RespawnPointStack.Peek().GetChild(0).gameObject.SetActive(false); //古いポイントの消火
+            //RespawnPointStack.Peek().GetChild(0).gameObject.SetActive(false); //古いポイントの消火
+            RespawnPoint_memory.GetChild(0).gameObject.SetActive(false); //古いポイントの消火
         }
-        RespawnPointStack.Push(checkpoint.transform); //チェックポイントの位置をスタックへプッシュ
+        //RespawnPointStack.Push(checkpoint.transform); //チェックポイントの位置をスタックへプッシュ
+        RespawnPoint_memory = checkpoint.transform; //チェックポイントの位置を記憶
         CinemachineVirtualCamera current = cmBrain.ActiveVirtualCamera as CinemachineVirtualCamera; //キャストも必要
         RespawnPointVC = current;　//リスポーン地点のVCを記憶
-        //Debug.Log("チェックポイント更新");
     }
 
     public void warpCheckpoint() //古いプレイヤーを除去し、新規プレイヤーを投入
     {
         iswarp = true;
-        Vector2 warppoint = new Vector2(RespawnPointStack.Peek().position.x, RespawnPointStack.Peek().position.y + 0.3f);
+        //Vector2 warppoint = new Vector2(RespawnPointStack.Peek().position.x, RespawnPointStack.Peek().position.y + 0.3f);
+        Vector2 warppoint = new Vector2(RespawnPoint_memory.position.x, RespawnPoint_memory.position.y + 0.3f);
 
         CinemachineVirtualCamera current = cmBrain.ActiveVirtualCamera as CinemachineVirtualCamera; //キャストも必要
         current.Priority = 10;
         RespawnPointVC.Priority = 100; //リスポーン地点のVCを有効化
         Destroy(OperatingPlayer);
         Instantiate(PlayerPref,warppoint,transform.rotation); //位置はスタックからポップ
-        //Debug.Log("チェックポイントへ");
     }
 }
