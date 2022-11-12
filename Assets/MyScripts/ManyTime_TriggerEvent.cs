@@ -18,27 +18,51 @@ public class ManyTime_TriggerEvent : MonoBehaviour
     private string sendMessage = "";
     [SerializeField]
     private string keycode = "";
+    [SerializeField]
+    private GameObject miniUI = null;
     private Player_Move player_move;
+    private bool triggerflg = false; //trueなら指定のキーでイベント開始
     private bool isTalking = false;
 
     // Start is called before the first frame update
     void Start()
     {
+        miniUI.SetActive(false);
     }
 
     // Update is called once per frame
     void Update()
     {
-
+        if (triggerflg && !isTalking)
+        {
+            if (Input.GetKeyDown(keycode))
+            {
+                StartCoroutine(Talk());
+            }
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.gameObject.CompareTag("Player"))
         {
-            if (Input.GetKeyDown(keycode))
+            triggerflg = true;
+            if(miniUI != null)
             {
-                StartCoroutine(Talk());
+                miniUI.SetActive(true);
+            }
+
+        }
+    }
+
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        if (collision.gameObject.CompareTag("Player"))
+        {
+            triggerflg = false;
+            if (miniUI != null)
+            {
+                miniUI.SetActive(false);
             }
         }
     }

@@ -49,7 +49,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb51f2a854b699348a35306700e6583f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 5.5
+  moveSpeed: 5.65
   jumpForce: 300
   bullet: {fileID: 8866135778974492422, guid: 03a369c30bf2fcd4187e37a8cca8f590, type: 3}
   shotPoint: {fileID: 1444728327931757052}
@@ -165,7 +165,7 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0.002607584, y: 0.0749861}
+  m_Offset: {x: -0.002204895, y: 0.0749861}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -176,7 +176,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.65200853, y: 0.5062778}
+  m_Size: {x: 0.54569054, y: 0.5062778}
   m_EdgeRadius: 0
 --- !u!1 &1444728327931757053
 GameObject:
