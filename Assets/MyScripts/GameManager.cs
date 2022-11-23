@@ -2,9 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Cinemachine;
+using UniRx;
 
 public class GameManager : MonoBehaviour
 {
+    //チェックポイント関係
     public GameObject PlayerPref;
     private GameObject OperatingPlayer;
     private Player_Move player_move;
@@ -15,33 +17,54 @@ public class GameManager : MonoBehaviour
 
     private CinemachineBrain cmBrain;
 
+    //残弾数管理関係
+    [SerializeField] private int MaxBullets = 10; //最大残弾数
+    [SerializeField] private int RemainingBullets = 0; //残弾数(プレイヤー更新でも失われない)
+
+
     /*
      * GameManager
      * 主にゲーム進行に関するもの
      * チェックポイント処理
+     * プレイヤーの残弾数管理(プレイヤーが交代したら新しいオブジェクトになるため)
      */
 
     // Start is called before the first frame update
     void Start()
     {
-        OperatingPlayer = GameObject.FindGameObjectWithTag("Player");
+        OperatingPlayer = GameObject.FindGameObjectWithTag("Player"); //プレイヤーを取得
         cmBrain = Camera.main.GetComponent<CinemachineBrain>();
         player_move = OperatingPlayer.GetComponent<Player_Move>();
-        player_move.checkPoint_Update = checkPoint_Update;
+        player_move.checkPoint_Update = checkPoint_Update; //関数を登録(デリゲート)
         player_move.warpCheckpoint = warpCheckpoint; //関数を登録(デリゲート)
+
+        player_move.remainingBullets = 0; //回復地点をふまない限り残弾補充なし
+
+        //購読(発射通知の受け取り)
+        player_move.shot_observable.Subscribe(
+            x =>
+            {
+                RemainingBullets = RemainingBullets - x;
+                player_move.remainingBullets = RemainingBullets;
+                Debug.Log("残弾：" + RemainingBullets + "発");
+            }).AddTo(this);
+        //購読（残弾補充通知の受け取り）
+        player_move.recovery_observable.Subscribe(
+            _ =>
+            {
+                RemainingBullets = MaxBullets;
+                player_move.remainingBullets = RemainingBullets;
+                Debug.Log("残弾補充");
+            }).AddTo(this);
+        
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (iswarp) //ワープ時新規プレイヤーの情報を取得
-        {
-            iswarp = false;
-            OperatingPlayer = GameObject.FindGameObjectWithTag("Player");
-            player_move = OperatingPlayer.GetComponent<Player_Move>();
-            player_move.checkPoint_Update = checkPoint_Update;
-            player_move.warpCheckpoint = warpCheckpoint; //関数を登録(デリゲート)
-        }
+        player_Update(); //チェックポイントへワープ時新規プレイヤーの情報を取得
+
+
     }
 
     public void checkPoint_Update(GameObject checkpoint) //チェックポイントのアップデート処理
@@ -70,5 +93,36 @@ public class GameManager : MonoBehaviour
         RespawnPointVC.Priority = 100; //リスポーン地点のVCを有効化
         Destroy(OperatingPlayer);
         Instantiate(PlayerPref,warppoint,transform.rotation); //位置はスタックからポップ
+    }
+
+    private void player_Update()
+    {
+        if (iswarp) //チェックポイントへワープ時新規プレイヤーの情報を取得
+        {
+            iswarp = false;
+            OperatingPlayer = GameObject.FindGameObjectWithTag("Player");
+            player_move = OperatingPlayer.GetComponent<Player_Move>();
+            player_move.checkPoint_Update = checkPoint_Update;
+            player_move.warpCheckpoint = warpCheckpoint; //関数を登録(デリゲート)
+
+            player_move.remainingBullets = RemainingBullets; //現在の残弾数を引き継ぎ
+
+            //購読(発射通知の受け取り)
+            player_move.shot_observable.Subscribe(
+                x =>
+                {
+                    RemainingBullets = RemainingBullets - x;
+                    player_move.remainingBullets = RemainingBullets;
+                    Debug.Log("残弾：" + RemainingBullets + "発");
+                }).AddTo(this);
+            //購読（残弾補充通知の受け取り）
+            player_move.recovery_observable.Subscribe(
+                _ =>
+                {
+                    RemainingBullets = MaxBullets;
+                    player_move.remainingBullets = RemainingBullets;
+                    Debug.Log("残弾補充");
+                }).AddTo(this);
+        }
     }
 }

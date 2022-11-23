@@ -7,6 +7,8 @@ TagManager:
   - Enemy
   - Floor
   - Trap
+  - PlayerBullet
+  - RecoveryPoint
   layers:
   - Default
   - TransparentFX

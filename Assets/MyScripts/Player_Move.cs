@@ -1,7 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Events;
+using UnityEngine.Events; //For UnityAction
+using UniRx;
+using System;
 
 /*
  * プレイヤーの移動・アニメーション・ダメージ判定
@@ -22,8 +24,13 @@ public class Player_Move: MonoBehaviour
     //shot関係
     public GameObject bullet;
     public Transform shotPoint;
+    public int remainingBullets { get; set; } //残弾数(自動プロパティ,バックフィールドに_remainingBullets生成)
     float coolTime = 0.2f; //待機時間
     float leftCoolTime; //待機している時間
+    private Subject<int> _shot = new Subject<int>();
+    public IObservable<int> shot_observable => _shot; //購読する機能(Subscribe)のみを外に公開するため
+    private Subject<Unit> _recoveryBullets = new Subject<Unit>();
+    public IObservable<Unit> recovery_observable => _recoveryBullets;
 
     //接地判定関係
     [SerializeField] private LayerMask groundLayer; //for GroundCheck
@@ -36,7 +43,7 @@ public class Player_Move: MonoBehaviour
     private Animator anim;
 
     public UnityAction warpCheckpoint; //ダメージ処理(デリゲート)
-    public UnityAction<GameObject> checkPoint_Update;
+    public UnityAction<GameObject> checkPoint_Update; //チェックポイントの更新（デリゲート）
 
 
     
@@ -176,13 +183,14 @@ public class Player_Move: MonoBehaviour
     private void shot()
     {
         leftCoolTime -= Time.deltaTime; //クールタイム更新(shot関数は毎Update呼ばれる)
-        if (leftCoolTime <= 0) //残り待機時間が0秒以下のとき
+        if (leftCoolTime <= 0 && remainingBullets > 0) //残り待機時間が0秒以下のとき、かつ残弾数が０以上のとき
         {
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 isAttack = true;
                 anim.SetTrigger("shot"); //ショットアニメーション
                 Instantiate(bullet, shotPoint.position, transform.rotation); //弾を前方に発射する
+                _shot.OnNext(1); //1発発射したことを通知
                 leftCoolTime = coolTime; //クールタイム発生
             }
         }
@@ -193,7 +201,7 @@ public class Player_Move: MonoBehaviour
         isAttack = false;
     }
 
-    //Damage()では主に無敵時間とダメージアニメーションの実装
+    //Damage()では主に無敵時間とダメージアニメーションの実装、ストリームの購読中止
     //具体的なダメージ処理はDamageTimer中のonDeadに登録済み(デリゲート)
     private void Damage()
     {
@@ -214,6 +222,8 @@ public class Player_Move: MonoBehaviour
             yield break;
         }
         damage = true;
+        _shot.Dispose(); //購読中止（このオブジェクトのストリームを終了させるため）
+        _recoveryBullets.Dispose();　//購読中止（個のオブジェクトのストリームを終了させるため）
         //anim.SetTrigger("damage");
         //無敵時間中の点滅
         for (int i = 0; i < 10; i++) //1秒
@@ -298,11 +308,15 @@ public class Player_Move: MonoBehaviour
         {
             checkPoint_Update?.Invoke(collision.gameObject);
         }
+        if (collision.gameObject.CompareTag("RecoveryPoint"))
+        {
+            _recoveryBullets.OnNext(Unit.Default); //RecoveryPoint通過の通知
+        }
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.CompareTag("Trap"))
+        if (collision.gameObject.CompareTag("Trap") || collision.gameObject.CompareTag("Enemy"))
         {
             Damage();
         }

@@ -1,6 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UniRx;
+using UniRx.Triggers;
+using Unity.VisualScripting;
 
 public class slime_bullet : MonoBehaviour
 {
@@ -14,21 +17,19 @@ public class slime_bullet : MonoBehaviour
         rb.velocity = transform.right * speed; //玉を飛ばす
     }
 
+    /*
     private void OnTriggerEnter2D(Collider2D collision) //弾丸は壁と敵にのみ衝突
     {
-        if (collision.tag == "Enemy")
-        {
-            //作成したコードEnemyクラス型の空変数enemを作成し、ぶつかったオブジェクトのコンポーネントEnemyクラスを取得する
-            Enemy enem = collision.GetComponent<Enemy>();
-            Instantiate(impact, transform.position, transform.rotation); //敵にぶつかったときエフェクトを出す
-            Destroy(gameObject); //敵にあたったら弾を消す
-            enem.OnDamage();     //OnDamage関数を呼び出す
+        if (collision.gameObject.layer == LayerMask.NameToLayer("Ground")　|| collision.tag == "Enemy") //壁はレイヤーで判断
+        {        
         }
-        else if (collision.gameObject.layer == LayerMask.NameToLayer("Ground"))
-        {
-            Instantiate(impact, transform.position, transform.rotation); //敵にぶつかったときエフェクトを出す
-            Destroy(gameObject); //敵にあたったら弾を消す
-        }
-        //Debug.Log("hit");
     }
+    */
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        Instantiate(impact, transform.position, transform.rotation); //ぶつかったときエフェクトを出す
+        Destroy(gameObject); //あたったら弾を消す
+    }
+
 }
