@@ -1,9 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Events; //For UnityAction
 using UniRx;
 using System;
+using UnityEngine.UI;
+using DG.Tweening;
+using Fungus;
 
 /*
  * プレイヤーの移動・アニメーション・ダメージ判定
@@ -21,8 +23,12 @@ public class Player_Move: MonoBehaviour
     private bool damage = false;
     private float previousGravityScale;
     private Collider2D boxcollider2d;
+    private Rigidbody2D rb;
+    private SpriteRenderer spriteRenderer;
 
     //shot関係
+    [SerializeField]
+    private string AttackKeyCode = "space";
     public GameObject bullet;
     public Transform shotPoint;
     public int remainingBullets { get; set; } //残弾数(自動プロパティ,バックフィールドに_remainingBullets生成)
@@ -35,19 +41,25 @@ public class Player_Move: MonoBehaviour
 
     //接地判定関係
     [SerializeField] private LayerMask groundLayer; //for GroundCheck
-
-    //レイヤーにEnemyを追加
-    public LayerMask enemyLayer; //特定のレイヤーでのみコライダーを検知するフィルター(敵か敵じゃないかの区別)
-    private Rigidbody2D rb;
-    private SpriteRenderer spriteRenderer;
+    
 
     private Animator anim;
+    //ダメージ処理通知
+    private Subject<Unit> _warpCheckPoint = new Subject<Unit>();
+    public IObservable<Unit> warpCheckPoint_observable => _warpCheckPoint;
+    //チェックポイント更新通知
+    private Subject<GameObject> _checkpointUpdate = new Subject<GameObject>();
+    public IObservable<GameObject> checkpointUpdate_observabele => _checkpointUpdate;
 
-    public UnityAction warpCheckpoint; //ダメージ処理(デリゲート)
-    public UnityAction<GameObject> checkPoint_Update; //チェックポイントの更新（デリゲート）
+    //プレイヤーUI(向き,アニメーションを操作)
+    private GameObject BulletMGCanvas; //回転を無効化する
+    private Image baseImage; //UI
+    private Image bulletGauge; //UI
+    private bool UIcounter = false;
 
 
-    
+
+
 
     // Start is called before the first frame update
     void Start()
@@ -56,6 +68,9 @@ public class Player_Move: MonoBehaviour
         boxcollider2d = GetComponent<BoxCollider2D>();
         anim = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
+        BulletMGCanvas = transform.Find("BulletMGCanvas").gameObject;
+        baseImage = transform.Find("BulletMGCanvas/BaseImage").GetComponent<Image>(); //子要素のUIを取得
+        bulletGauge = transform.Find("BulletMGCanvas/BulletGauge").GetComponent<Image>();
         isRight = true;
     }
 
@@ -68,6 +83,10 @@ public class Player_Move: MonoBehaviour
     void Update()
     {
         Movement(); //動く
+        if (isAttack)
+        {
+            StartCoroutine(UIAnimationSet());
+        }
     }
 
     //プレイヤーを停止（これ単体では１フレームのみ）
@@ -131,11 +150,13 @@ public class Player_Move: MonoBehaviour
         if (isRight && inputX < 0)
         {
             transform.Rotate(0, 180f, 0);
+            BulletMGCanvas.transform.Rotate(0, 180f, 0); //UIは回転を直す
             isRight = false;
         }
         if (!isRight && inputX > 0)
         {
             transform.Rotate(0, 180f, 0);
+            BulletMGCanvas.transform.Rotate(0, 180f, 0); //UIは回転を直す
             isRight = true;
         }
     }
@@ -185,10 +206,13 @@ public class Player_Move: MonoBehaviour
     private void shot()
     {
         leftCoolTime -= Time.deltaTime; //クールタイム更新(shot関数は毎Update呼ばれる)
-        if (leftCoolTime <= 0 && remainingBullets > 0) //残り待機時間が0秒以下のとき、かつ残弾数が０以上のとき
+        if (leftCoolTime <= 0 && remainingBullets > 0) //残り待機時間が0秒以下のとき、かつ残弾数が0以上のとき
         {
-            if (Input.GetKeyDown(KeyCode.Space))
+            if (Input.GetKeyDown(AttackKeyCode))
             {
+                //UI表示
+                baseImage.DOFade(1f, 0f).SetLink(gameObject);
+                bulletGauge.DOFade(1f, 0f).SetLink(gameObject);
                 isAttack = true;
                 anim.SetTrigger("shot"); //ショットアニメーション
                 Instantiate(bullet, shotPoint.position, transform.rotation); //弾を前方に発射する
@@ -225,8 +249,9 @@ public class Player_Move: MonoBehaviour
             yield break;
         }
         damage = true;
-        _shot.OnCompleted(); //購読中止（このオブジェクトのストリームを終了させるため）
-        _recoveryBullets.OnCompleted();　//購読中止（このオブジェクトのストリームを終了させるため）
+        _shot.OnCompleted(); //購読完了（ストリームを終了させるため）
+        _recoveryBullets.OnCompleted();　//購読完了（ストリームを終了させるため）
+        _checkpointUpdate.OnCompleted(); //購読完了（ストリームを終了させるため）
         //anim.SetTrigger("damage");
         //無敵時間中の点滅
         for (int i = 0; i < 10; i++) //1秒
@@ -238,7 +263,50 @@ public class Player_Move: MonoBehaviour
         }
         damage = false;
         //ダメージ処理
-        warpCheckpoint?.Invoke();
+        _warpCheckPoint.OnNext(Unit.Default);
+        _warpCheckPoint.OnCompleted();
+    }
+
+    //UIフェードアニメーション
+    private IEnumerator UIAnimationSet()
+    {
+        //毎フレーム呼ばれる
+        if (isAttack || UIcounter)
+        {
+            yield break;
+        }
+        else
+        {
+            if (baseImage.color.a == 0) //アルファ値0ならそもそもアニメーションを呼ぶ必要ない
+            {
+                yield break;
+            }
+            UIcounter = true;
+            for(int i=0; i < 30; i++)
+            {
+                if (isAttack)
+                {
+                    UIcounter = false;
+                    yield break;
+                }
+                yield return new WaitForSeconds(0.1f);
+            }
+            //プレイヤー待機中も4秒ごとにずっと呼ばれるのでメモリ効率悪そうなのでアルファ値0なら飛ばす
+            Debug.Log(baseImage.color.a);      
+            Sequence sequence = DOTween.Sequence();
+            sequence.Append(baseImage.DOFade(0f, 1f));
+            sequence.Join(bulletGauge.DOFade(0f, 1f));
+            sequence.Play().OnUpdate(() =>
+            {
+                if (isAttack)
+                {
+                    sequence.Kill();
+                    UIcounter = false;
+                    baseImage.DOFade(1f, 0f).SetLink(gameObject);
+                    bulletGauge.DOFade(1f, 0f).SetLink(gameObject);
+                }
+            }).OnComplete(() => UIcounter = false).SetLink(gameObject);
+        }
     }
 
     //接地チェック
@@ -309,15 +377,18 @@ public class Player_Move: MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Respawn"))
         {
-            checkPoint_Update?.Invoke(collision.gameObject);
+            _checkpointUpdate.OnNext(collision.gameObject);
         }
         if (collision.gameObject.CompareTag("RecoveryPoint"))
         {
+            //UI表示
+            baseImage.DOFade(1f, 0f).SetLink(gameObject);
+            bulletGauge.DOFade(1f, 0f).SetLink(gameObject);
             _recoveryBullets.OnNext(Unit.Default); //RecoveryPoint通過の通知
         }
     }
 
-    private void OnCollisionEnter2D(Collision2D collision)
+    private void OnCollisionEnter2D(UnityEngine.Collision2D collision)
     {
         if (collision.gameObject.CompareTag("Trap") || collision.gameObject.CompareTag("Enemy"))
         {

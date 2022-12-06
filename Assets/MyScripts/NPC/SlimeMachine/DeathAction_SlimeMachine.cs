@@ -9,7 +9,7 @@ using System;
 
 /*
  * SlimeMachine撃破時の演出
- * DeathActionに一回入ればいいのでOnAwakeに記述
+ * DeathActionに一回入ればいいので基本的にOnAwakeに記述
  * OnStartに記述するとBehaviorTree側で永遠に呼ばれる
  */
 
@@ -32,11 +32,13 @@ public class DeathAction_SlimeMachine : ActionBehaviour {
         slimemachine = GetComponent<SlimeMachine>();
         animEndTrigger = anim.GetBehaviour<ObservableStateMachineTrigger>();
         anim.SetTrigger("defeat");
+		slimemachine.IsBossBreak = true;
+		//撃破アニメーションが終了すると透明化する
         animEndTrigger.OnStateExitAsObservable()
             .Where(x => x.StateInfo.IsName("SlimeMachine_defeat"))
             .Subscribe(x =>
             {
-				slimemachine.BossFadeOut();
+				slimemachine.BossFadeOut(); //透明にする
                 actionCompleted = true;
             }).AddTo(this);
     }

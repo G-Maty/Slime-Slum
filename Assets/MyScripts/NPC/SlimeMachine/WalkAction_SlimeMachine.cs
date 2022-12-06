@@ -15,6 +15,7 @@ public class WalkAction_SlimeMachine : ActionBehaviour {
     private float walk_interval;
     [SerializeField]
     private float walk_distans;
+    private GameObject BossCanvas; //反転を防ぐため
     private bool actionCompleted = false; //アクションが一通り終了したらtrue
 
     protected override void OnAwake()
@@ -24,13 +25,16 @@ public class WalkAction_SlimeMachine : ActionBehaviour {
     protected override void OnStart()
     {
         anim = GetComponent<Animator>();
+        BossCanvas = transform.Find("BossCanvas").gameObject;
         //DOTweenで動作
         var sequence = DOTween.Sequence();
         sequence.Append(this.transform.DOLocalMoveX(-walk_distans, walk_second).SetEase(Ease.Linear).SetRelative(true).SetLink(gameObject));
         sequence.AppendInterval(walk_interval);
         sequence.Append(this.transform.DOScaleX(-1, 0));
+        sequence.Append(BossCanvas.transform.DOScaleX(-1, 0)); //キャンバスの反転を防ぐ
         sequence.Append(this.transform.DOLocalMoveX(walk_distans, walk_second).SetEase(Ease.Linear).SetRelative(true).SetLink(gameObject));
         sequence.Append(this.transform.DOScaleX(1, 0));
+        sequence.Append(BossCanvas.transform.DOScaleX(1, 0)); //キャンバスの反転を防ぐ
         sequence.Play().OnStart(() => anim.SetBool("walk", true)).OnComplete(() =>
         {
             actionCompleted = true;

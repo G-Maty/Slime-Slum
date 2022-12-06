@@ -7,6 +7,10 @@ using Arbor;
 using Arbor.BehaviourTree; //For BehaviorTree
 using Fungus;
 using UniRx;
+using Unity.VisualScripting;
+using TMPro;
+using System.Diagnostics.Tracing;
+using UnityEngine.UI;
 
 /*
  * SlimeMachine
@@ -20,7 +24,11 @@ public class SlimeMachine : MonoBehaviour
 {
     [SerializeField] private Flowchart eventFlowchart;
     [SerializeField] private string SlimeMachine_ButtleEndMessage;
-    private int initialHP;
+    [SerializeField] private string SlimeMachine_TimeUpMessage;
+    public bool IsBossBreak { get; set; }
+    private GameManager gameManager;
+    private int maxHP;
+    private int HP;
     private BehaviourTree behaviortree;
     private ParameterContainer parameter;
     private SpriteRenderer slimemachine_spr;
@@ -28,24 +36,51 @@ public class SlimeMachine : MonoBehaviour
     [SerializeField] private GameObject bulletPrefab;
     [SerializeField] private GameObject homingbulletPrefab;
     [SerializeField] private Transform shotpoint;
+    [SerializeField] private int recoveryHP; //HP回復
+    [SerializeField] private int ButtleTimerSet; //制限時間
+
+    //UI関係は子オブジェクトに設定
+    [SerializeField] private TextMeshProUGUI countTimer; //タイムテキスト
+    [SerializeField] private Slider HPslider; //HPゲージ
+
 
     // Start is called before the first frame update
     void Start()
     {
+        gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
         behaviortree = GetComponent<BehaviourTree>();
         parameter = GetComponent<ParameterContainer>();
         slimemachine_spr = GetComponent<SpriteRenderer>();
         deathAction = GetComponent<DeathAction_SlimeMachine>();
         //初期化
-        initialHP = parameter.GetInt("HP", 0);
+        maxHP = parameter.GetInt("HP", 0);
+        HP = maxHP;
+        HPslider.maxValue = maxHP;
+        HPslider.value = maxHP;
+        countTimer.text = ButtleTimerSet.ToString();
         slimemachine_spr.color = new Color(255,255,255,0);
         behaviortree.enabled = false;
         this.gameObject.SetActive(false);
+
+        //少しカクつくか？
+        gameManager.playerDeath_observable.Subscribe(_ =>
+        {
+            HP = HP + recoveryHP;
+            if(HP > maxHP)
+            {
+                HP = maxHP;
+            }
+            parameter.SetInt("HP", HP); //HP回復
+            HPslider.value = parameter.GetInt("HP");
+        }).AddTo(this);
+
         deathAction.ButtleFin.Subscribe(_ =>
         {
             eventFlowchart.SendFungusMessage(SlimeMachine_ButtleEndMessage);
-        }); //バトル終了時会話イベントを呼び出す
+        }).AddTo(this); //撃破演出完了時会話イベントを呼び出す
+
     }
+
 
     public void SlimeMachine_shot() //Arbor側で呼び出し
     {
@@ -65,10 +100,17 @@ public class SlimeMachine : MonoBehaviour
         slimemachine_spr.DOFade(1, 2).SetLink(gameObject);
     }
 
+    //制限時間スタート
+    public void ButtleTimerStart()
+    {
+        StartCoroutine(ButtleTimer());
+    }
+
     //AI起動
     public void ButtleStart()
     {
         behaviortree.enabled = true;
+        ButtleTimerStart(); //カウントダウンスタート
     }
 
     //退場演出(Arbor側で呼び出し)
@@ -84,10 +126,42 @@ public class SlimeMachine : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("PlayerBullet")) //ダメージ処理
         {
-            parameter.SetInt("HP",initialHP--); //HP管理
+            parameter.SetInt("HP",HP--); //HP管理
+            HPslider.value = parameter.GetInt("HP");
             Destroy(collision.gameObject); //あたった弾丸を消去
         }
     }
 
-    
+    //タイムオーバー時の初期化(Fungus仕様)
+    private void BossInitialization()
+    {
+        BossFadeOut();
+        HP = maxHP;
+        behaviortree.enabled = false;
+        HPslider.value = maxHP;
+        countTimer.text = ButtleTimerSet.ToString();
+        //ボスイベントトリガーを復活
+        eventFlowchart.SendFungusMessage(SlimeMachine_TimeUpMessage);
+    }
+
+    //制限時間処理
+    IEnumerator ButtleTimer()
+    {
+        for (int i = ButtleTimerSet; i > -1; i--)
+        {
+            if (IsBossBreak)
+            {
+                yield break;
+            }
+            yield return new WaitForSeconds(1);
+            countTimer.color = Color.white; //初期化のため
+            countTimer.text = i.ToString();
+            if (i < 11)
+            {
+                countTimer.color = Color.red;
+            }
+        }
+        BossInitialization(); //時間切れの処理
+    }
+
 }

@@ -9,6 +9,7 @@ TagManager:
   - Trap
   - PlayerBullet
   - RecoveryPoint
+  - GameManager
   layers:
   - Default
   - TransparentFX
