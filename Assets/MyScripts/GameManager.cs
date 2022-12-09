@@ -31,7 +31,7 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
     //残弾数管理関係
     [SerializeField] private int MaxBullets = 10; //最大残弾数
     [SerializeField] private int RemainingBullets = 0; //残弾数(プレイヤー更新でも失われない)
-    private Image baseImage; //UI
+    //private Image baseImage; //UI
     private Image bulletGauge; //UI
 
 
@@ -47,7 +47,7 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
         OperatingPlayer = GameObject.FindGameObjectWithTag("Player"); //プレイヤーを取得
         cmBrain = Camera.main.GetComponent<CinemachineBrain>();
         player_move = OperatingPlayer.GetComponent<Player_Move>();
-        baseImage = OperatingPlayer.transform.Find("BulletMGCanvas/BaseImage").GetComponent<Image>(); //UIを取得
+        //baseImage = OperatingPlayer.transform.Find("BulletMGCanvas/BaseImage").GetComponent<Image>(); //UIを取得
         bulletGauge = OperatingPlayer.transform.Find("BulletMGCanvas/BulletGauge").GetComponent<Image>();
         checkpointUpdate_Subscribe();
         warpCheckPoint_Subscribe(); //ワープ通知の購読
@@ -73,7 +73,7 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
             OperatingPlayer = GameObject.FindGameObjectWithTag("Player");
             player_move = OperatingPlayer.GetComponent<Player_Move>();
             //player_move.checkPoint_Update = checkPoint_Update;
-            baseImage = OperatingPlayer.transform.Find("BulletMGCanvas/BaseImage").GetComponent<Image>(); //UIを取得
+            //baseImage = OperatingPlayer.transform.Find("BulletMGCanvas/BaseImage").GetComponent<Image>(); //UIを取得
             bulletGauge = OperatingPlayer.transform.Find("BulletMGCanvas/BulletGauge").GetComponent<Image>();
             checkpointUpdate_Subscribe();
             warpCheckPoint_Subscribe();
@@ -128,7 +128,7 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
                 RemainingBullets = RemainingBullets - x;
                 player_move.remainingBullets = RemainingBullets;
                 bulletGauge.fillAmount = (float)RemainingBullets / (float)MaxBullets;
-                Debug.Log("残弾：" + RemainingBullets + "発");
+                //Debug.Log("残弾：" + RemainingBullets + "発");
             }).AddTo(this);
         //購読（残弾補充通知の受け取り）
         player_move.recovery_observable.Subscribe(
@@ -139,7 +139,7 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
                 //アニメつけておしゃれにした
                 bulletGauge.DOFillAmount(MaxBullets / MaxBullets,0.5f).SetLink(gameObject);
                 //bulletGauge.fillAmount = MaxBullets / MaxBullets;
-                Debug.Log("残弾補充");
+                //Debug.Log("残弾補充");
             }).AddTo(this);
     }
 }

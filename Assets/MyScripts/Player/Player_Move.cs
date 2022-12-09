@@ -9,6 +9,7 @@ using Fungus;
 
 /*
  * プレイヤーの移動・アニメーション・ダメージ判定
+ * SE・エフェクト
  */
 
 
@@ -25,6 +26,16 @@ public class Player_Move: MonoBehaviour
     private Collider2D boxcollider2d;
     private Rigidbody2D rb;
     private SpriteRenderer spriteRenderer;
+    private Animator anim;
+
+    //SE関係
+    private AudioSource audioSource;
+    [SerializeField] private AudioClip jumpSE;
+    [SerializeField] private AudioClip attackSE;
+    [SerializeField] private AudioClip damageSE;
+    [SerializeField] private AudioClip recoverySE;
+    [SerializeField] private AudioClip emptySE;
+
 
     //shot関係
     [SerializeField]
@@ -43,7 +54,6 @@ public class Player_Move: MonoBehaviour
     [SerializeField] private LayerMask groundLayer; //for GroundCheck
     
 
-    private Animator anim;
     //ダメージ処理通知
     private Subject<Unit> _warpCheckPoint = new Subject<Unit>();
     public IObservable<Unit> warpCheckPoint_observable => _warpCheckPoint;
@@ -56,6 +66,8 @@ public class Player_Move: MonoBehaviour
     private Image baseImage; //UI
     private Image bulletGauge; //UI
     private bool UIcounter = false;
+    [SerializeField]
+    private GameObject recovery_eff;
 
 
 
@@ -68,22 +80,18 @@ public class Player_Move: MonoBehaviour
         boxcollider2d = GetComponent<BoxCollider2D>();
         anim = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
+        audioSource = GetComponent<AudioSource>();
         BulletMGCanvas = transform.Find("BulletMGCanvas").gameObject;
         baseImage = transform.Find("BulletMGCanvas/BaseImage").GetComponent<Image>(); //子要素のUIを取得
         bulletGauge = transform.Find("BulletMGCanvas/BulletGauge").GetComponent<Image>();
         isRight = true;
     }
 
-    private void FixedUpdate()
-    {
-      
-    }
-
     // Update is called once per frame
     void Update()
     {
         Movement(); //動く
-        if (isAttack)
+        if (!isAttack)
         {
             StartCoroutine(UIAnimationSet());
         }
@@ -175,6 +183,7 @@ public class Player_Move: MonoBehaviour
                 anim.SetBool("landing_down", false);
                 anim.SetTrigger("jump");
                 rb.gravityScale = -3f;
+                audioSource.PlayOneShot(jumpSE);
                 rb.AddForce(transform.up * jumpForce); //力を加えてジャンプ
                 isup = true;
             }
@@ -192,6 +201,7 @@ public class Player_Move: MonoBehaviour
                 anim.SetBool("landing_up",false);
                 anim.SetTrigger("jump");
                 rb.gravityScale = 3f;
+                audioSource.PlayOneShot(jumpSE);
                 rb.AddForce(transform.up * -jumpForce); //力を加えてジャンプ
                 isup = false;
             }
@@ -206,7 +216,7 @@ public class Player_Move: MonoBehaviour
     private void shot()
     {
         leftCoolTime -= Time.deltaTime; //クールタイム更新(shot関数は毎Update呼ばれる)
-        if (leftCoolTime <= 0 && remainingBullets > 0) //残り待機時間が0秒以下のとき、かつ残弾数が0以上のとき
+        if (leftCoolTime <= 0 && remainingBullets > 0) //残り待機時間が0秒以下のとき、かつ残弾数が1以上のとき
         {
             if (Input.GetKeyDown(AttackKeyCode))
             {
@@ -215,9 +225,19 @@ public class Player_Move: MonoBehaviour
                 bulletGauge.DOFade(1f, 0f).SetLink(gameObject);
                 isAttack = true;
                 anim.SetTrigger("shot"); //ショットアニメーション
+                audioSource.PlayOneShot(attackSE);
                 Instantiate(bullet, shotPoint.position, transform.rotation); //弾を前方に発射する
                 _shot.OnNext(1); //1発発射したことを通知
                 leftCoolTime = coolTime; //クールタイム発生
+            }
+        }else if(remainingBullets <= 0) //残弾数が0以下のとき
+        {
+            if (Input.GetKeyDown(AttackKeyCode))
+            {
+                //UI表示
+                baseImage.DOFade(1f, 0f).SetLink(gameObject);
+                bulletGauge.DOFade(1f, 0f).SetLink(gameObject);
+                audioSource.PlayOneShot(emptySE); //SE
             }
         }
     }
@@ -237,6 +257,7 @@ public class Player_Move: MonoBehaviour
             return;
         }
         boxcollider2d.enabled = false;
+        audioSource.PlayOneShot(damageSE);
         StartCoroutine("DamageTimer");
     }
 
@@ -292,7 +313,6 @@ public class Player_Move: MonoBehaviour
                 yield return new WaitForSeconds(0.1f);
             }
             //プレイヤー待機中も4秒ごとにずっと呼ばれるのでメモリ効率悪そうなのでアルファ値0なら飛ばす
-            Debug.Log(baseImage.color.a);      
             Sequence sequence = DOTween.Sequence();
             sequence.Append(baseImage.DOFade(0f, 1f));
             sequence.Join(bulletGauge.DOFade(0f, 1f));
@@ -384,6 +404,8 @@ public class Player_Move: MonoBehaviour
             //UI表示
             baseImage.DOFade(1f, 0f).SetLink(gameObject);
             bulletGauge.DOFade(1f, 0f).SetLink(gameObject);
+            audioSource.PlayOneShot(recoverySE); //SE
+            Instantiate(recovery_eff, transform.position, transform.rotation); //回復eff生成
             _recoveryBullets.OnNext(Unit.Default); //RecoveryPoint通過の通知
         }
     }
