@@ -42,6 +42,7 @@ public class HomingAction_SlimeMachine : ActionBehaviour {
         for (int i = 0; i < shot_count; i++)
         {
             slimemachine.SlimeMachine_homingshot();
+            slimemachine.SEplayOneShot("shot"); //SE
             yield return new WaitForSeconds(shot_cooltime);
         }
         actionCompleted = true;

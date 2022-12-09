@@ -18,6 +18,7 @@ using UnityEngine.UI;
  *・shot処理呼び出し元
  *・出現演出呼び出し元
  *・撃破時のイベント呼び出し
+ *・SE
  */
 
 public class SlimeMachine : MonoBehaviour
@@ -39,6 +40,11 @@ public class SlimeMachine : MonoBehaviour
     [SerializeField] private int recoveryHP; //HP回復
     [SerializeField] private int ButtleTimerSet; //制限時間
 
+    private AudioSource audioSource;
+    [SerializeField] private AudioClip shotSE;
+    [SerializeField] private AudioClip damagedSE;
+    [SerializeField] private AudioClip explosionSE;
+
     //UI関係は子オブジェクトに設定
     [SerializeField] private TextMeshProUGUI countTimer; //タイムテキスト
     [SerializeField] private Slider HPslider; //HPゲージ
@@ -52,6 +58,7 @@ public class SlimeMachine : MonoBehaviour
         parameter = GetComponent<ParameterContainer>();
         slimemachine_spr = GetComponent<SpriteRenderer>();
         deathAction = GetComponent<DeathAction_SlimeMachine>();
+        audioSource = GetComponent<AudioSource>();
         //初期化
         maxHP = parameter.GetInt("HP", 0);
         HP = maxHP;
@@ -128,6 +135,7 @@ public class SlimeMachine : MonoBehaviour
         {
             parameter.SetInt("HP",HP--); //HP管理
             HPslider.value = parameter.GetInt("HP");
+            SEplayOneShot("damage"); //SE
             Destroy(collision.gameObject); //あたった弾丸を消去
         }
     }
@@ -164,4 +172,19 @@ public class SlimeMachine : MonoBehaviour
         BossInitialization(); //時間切れの処理
     }
 
+    public void SEplayOneShot(string str)
+    {
+        switch (str)
+        {
+            case "shot":
+                audioSource.PlayOneShot(shotSE);
+                break;
+            case "damage":
+                audioSource.PlayOneShot(damagedSE);
+                break;
+            case "explode":
+                audioSource.PlayOneShot(explosionSE);
+                break;
+        }
+    }
 }

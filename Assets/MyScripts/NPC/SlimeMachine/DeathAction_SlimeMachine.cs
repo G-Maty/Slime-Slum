@@ -32,6 +32,7 @@ public class DeathAction_SlimeMachine : ActionBehaviour {
         slimemachine = GetComponent<SlimeMachine>();
         animEndTrigger = anim.GetBehaviour<ObservableStateMachineTrigger>();
         anim.SetTrigger("defeat");
+		slimemachine.SEplayOneShot("explode");
 		slimemachine.IsBossBreak = true;
 		//撃破アニメーションが終了すると透明化する
         animEndTrigger.OnStateExitAsObservable()
@@ -58,7 +59,7 @@ public class DeathAction_SlimeMachine : ActionBehaviour {
     }
 
 	protected override void OnEnd() {
-		ButtleFinSubject.OnNext(Unit.Default);
+		ButtleFinSubject.OnNext(Unit.Default); //会話イベントを呼び出すため
 		ButtleFinSubject.OnCompleted();
 	}
 	

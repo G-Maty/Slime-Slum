@@ -43,6 +43,7 @@ public class AttackAction_SlimeMachine: ActionBehaviour {
         for (int i = 0; i < shot_count; i++)
         {
             slimemachine.SlimeMachine_shot();
+            slimemachine.SEplayOneShot("shot");
             yield return new WaitForSeconds(shot_cooltime);
         }
         actionCompleted = true;
