@@ -8,6 +8,8 @@ using DG.Tweening;
 [AddComponentMenu("")]
 public class WalkAction_SlimeMachine : ActionBehaviour {
 
+    //SerializeField : ArborのBehaviorTree側で設定
+
     private Animator anim;
     [SerializeField]
     private float walk_second;

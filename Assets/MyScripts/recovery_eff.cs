@@ -2,6 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/*
+ * エフェクトがプレイヤーに追従する挙動
+ * 弾丸補充エフェクトPrefabにアタッチ
+ */
+
 public class recovery_eff : MonoBehaviour
 {
     [SerializeField]
@@ -18,7 +23,7 @@ public class recovery_eff : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        transform.position = player.transform.position;
+        transform.position = player.transform.position; //
     }
 
     IEnumerator objDestroy()

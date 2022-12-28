@@ -110,7 +110,7 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
                 Vector2 warppoint = new Vector2(RespawnPoint_memory.position.x, RespawnPoint_memory.position.y + 0.3f);
                 CinemachineVirtualCamera current = cmBrain.ActiveVirtualCamera as CinemachineVirtualCamera; //キャストも必要
                 _playerDeath.OnNext(Unit.Default);
-                current.Priority = 10;
+                current.Priority = 10; //0でよくね
                 RespawnPointVC.Priority = 100; //リスポーン地点のVCを有効化
                 Destroy(OperatingPlayer);
                 Instantiate(PlayerPref, warppoint, transform.rotation); //位置はスタックからポップ
@@ -136,7 +136,7 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
             {
                 RemainingBullets = MaxBullets;
                 player_move.remainingBullets = RemainingBullets;
-                //アニメつけておしゃれにした
+                //残弾UI : アニメつけておしゃれにした
                 bulletGauge.DOFillAmount(MaxBullets / MaxBullets,0.5f).SetLink(gameObject);
                 //bulletGauge.fillAmount = MaxBullets / MaxBullets;
                 //Debug.Log("残弾補充");

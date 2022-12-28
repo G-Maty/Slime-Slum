@@ -5,6 +5,11 @@ using UniRx;
 using UniRx.Triggers;
 using Unity.VisualScripting;
 
+/*
+ * プレイヤーの弾丸
+ * bulletPrefabにアタッチ
+ */
+
 public class slime_bullet : MonoBehaviour
 {
     [SerializeField] GameObject impact; //敵にぶつかったときのエフェクト

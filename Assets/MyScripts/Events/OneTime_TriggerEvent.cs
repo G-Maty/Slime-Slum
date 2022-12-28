@@ -49,6 +49,8 @@ public class OneTime_TriggerEvent : MonoBehaviour
         isTalking = true;
         player_move.Freeze_player(); //Player硬直
         player_move.enabled = false; //移動を制限
+        player_move.Unzip_player(); //Player解凍（以前の重力等を引き継ぎ）
+
 
         eventFlowchart.SendFungusMessage(sendMessage); //フローチャートにメッセージを送信して特定のイベント（ブロック）開始
         yield return new WaitUntil(() => eventFlowchart.GetExecutingBlocks().Count == 0); //イベント（ブロック）が終了するまで待つ
@@ -56,6 +58,5 @@ public class OneTime_TriggerEvent : MonoBehaviour
         isTalking = false;
         this.gameObject.SetActive(false); //イベント発生を防ぐ
         player_move.enabled = true; //移動の制限解除
-        player_move.Unzip_player(); //Player解凍（以前の重力等を引き継ぎ）
     }
 }

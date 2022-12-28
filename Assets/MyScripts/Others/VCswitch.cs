@@ -3,6 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using Cinemachine;
 
+/*
+ * アクティブバーチャルカメラの切り替え
+ * CM Vcamオブジェクトにアタッチ
+ */
+
 public class VCswitch : MonoBehaviour
 {
     private CinemachineBrain cmBrain;
