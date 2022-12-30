@@ -9,7 +9,7 @@ using DG.Tweening;
 public class WalkAction_SlimeMachine : ActionBehaviour {
 
     //SerializeField : ArborのBehaviorTree側で設定
-
+    private SlimeMachine slimeMachine;
     private Animator anim;
     [SerializeField]
     private float walk_second;
@@ -26,6 +26,7 @@ public class WalkAction_SlimeMachine : ActionBehaviour {
 
     protected override void OnStart()
     {
+        slimeMachine = GetComponent<SlimeMachine>();
         anim = GetComponent<Animator>();
         BossCanvas = transform.Find("BossCanvas").gameObject;
         //DOTweenで動作
@@ -37,7 +38,13 @@ public class WalkAction_SlimeMachine : ActionBehaviour {
         sequence.Append(this.transform.DOLocalMoveX(walk_distans, walk_second).SetEase(Ease.Linear).SetRelative(true).SetLink(gameObject));
         sequence.Append(this.transform.DOScaleX(1, 0));
         sequence.Append(BossCanvas.transform.DOScaleX(1, 0)); //キャンバスの反転を防ぐ
-        sequence.Play().OnStart(() => anim.SetBool("walk", true)).OnComplete(() =>
+        sequence.Play().OnStart(() => anim.SetBool("walk", true)).OnUpdate(() =>
+        {
+            if (slimeMachine.IsBossBreak)
+            {
+                sequence.Kill();
+            }
+        }).OnComplete(() =>
         {
             actionCompleted = true;
         }).SetLink(this.gameObject);

@@ -15,7 +15,7 @@ public class OneTime_TriggerEvent : MonoBehaviour
     private Flowchart eventFlowchart = null;
     [SerializeField]
     private string sendMessage = "";
-    private Player_Move player_move;
+    private GameManager gameManager;
     private bool isTalking = false;
 
     // Start is called before the first frame update
@@ -44,12 +44,13 @@ public class OneTime_TriggerEvent : MonoBehaviour
             yield break;
         }
         //会話中のプレイヤーの動きを制限するため
-        player_move = GameObject.FindGameObjectWithTag("Player").GetComponent<Player_Move>();
+        gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
 
         isTalking = true;
-        player_move.Freeze_player(); //Player硬直
-        player_move.enabled = false; //移動を制限
-        player_move.Unzip_player(); //Player解凍（以前の重力等を引き継ぎ）
+        gameManager.Restrict_PlayerMove(); //Player硬直
+        //player_move.Freeze_player(); //Player硬直
+        //player_move.enabled = false; //移動を制限
+        //player_move.Unzip_player(); //Player解凍（以前の重力等を引き継ぎ）
 
 
         eventFlowchart.SendFungusMessage(sendMessage); //フローチャートにメッセージを送信して特定のイベント（ブロック）開始
@@ -57,6 +58,7 @@ public class OneTime_TriggerEvent : MonoBehaviour
 
         isTalking = false;
         this.gameObject.SetActive(false); //イベント発生を防ぐ
-        player_move.enabled = true; //移動の制限解除
+        gameManager.Unrestrict_PlayerMove(); //Player解凍
+        //player_move.enabled = true; //移動の制限解除
     }
 }

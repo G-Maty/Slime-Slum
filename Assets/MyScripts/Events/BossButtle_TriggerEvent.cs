@@ -21,7 +21,7 @@ public class BossButtle_TriggerEvent : MonoBehaviour
     private string keycode = "";
     [SerializeField]
     private GameObject miniUI = null;
-    private Player_Move player_move;
+    private GameManager gameManager;
     [SerializeField] private SpriteRenderer buttleTrigger_renderer;
     [SerializeField] private SpriteRenderer particleUp_renderer;
     private bool triggerflg = false; //trueなら指定のキーでイベント開始
@@ -48,6 +48,7 @@ public class BossButtle_TriggerEvent : MonoBehaviour
         }
     }
 
+    //トリガーを再表示、Fungusコマンドから呼び出し
     public void initializationTrigger()
     {
         buttleTrigger_renderer.DOFade(1, 1f).SetLink(gameObject); //表示
@@ -85,17 +86,15 @@ public class BossButtle_TriggerEvent : MonoBehaviour
             yield break;
         }
         //会話中のプレイヤーの動きを制限するため
-        player_move = GameObject.FindGameObjectWithTag("Player").GetComponent<Player_Move>();
+        gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
 
         isTalking = true;
-        player_move.Freeze_player(); //Player硬直
-        player_move.enabled = false; //移動を制限
+        gameManager.Restrict_PlayerMove(); //Playerの移動制限
 
         eventFlowchart.SendFungusMessage(sendMessage); //フローチャートにメッセージを送信して特定のイベント（ブロック）開始
         yield return new WaitUntil(() => eventFlowchart.GetExecutingBlocks().Count == 0); //イベント（ブロック）が終了するまで待つ
         isTalking = false;
-        player_move.enabled = true; //移動の制限解除
-        player_move.Unzip_player(); //Player解凍（以前の重力等を引き継ぎ）
+        gameManager.Unrestrict_PlayerMove(); //Playerの解凍
         this.gameObject.SetActive(false);
     }
 }

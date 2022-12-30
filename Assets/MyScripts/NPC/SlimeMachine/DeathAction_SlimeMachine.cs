@@ -33,7 +33,7 @@ public class DeathAction_SlimeMachine : ActionBehaviour {
         animEndTrigger = anim.GetBehaviour<ObservableStateMachineTrigger>();
         anim.SetTrigger("defeat");
 		slimemachine.SEplayOneShot("explode");
-		slimemachine.IsBossBreak = true;
+		slimemachine.IsBossBreak = true; //撃破フラグtrue
 		//撃破アニメーションが終了すると透明化する
         animEndTrigger.OnStateExitAsObservable()
             .Where(x => x.StateInfo.IsName("SlimeMachine_defeat"))
@@ -47,7 +47,6 @@ public class DeathAction_SlimeMachine : ActionBehaviour {
 	protected override void OnStart() {
 		anim.SetBool("walk",false);
         anim.SetBool("attack", false);
-        //敵の移動をストップさせたい
     }
 
     protected override void OnExecute() {

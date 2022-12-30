@@ -6,6 +6,7 @@ using UniRx;
 using System;
 using UnityEngine.UI;
 using DG.Tweening;
+using System.Xml.Serialization;
 
 /*
  * GameManager
@@ -13,6 +14,7 @@ using DG.Tweening;
  * チェックポイント処理
  * プレイヤーの残弾数管理(プレイヤーが交代したら新しいオブジェクトになるため)
  * プレイヤーUI
+ * プレイヤーの挙動制限
  */
 
 public class GameManager : SingletonMonoBehaviour<GameManager>
@@ -141,5 +143,19 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
                 //bulletGauge.fillAmount = MaxBullets / MaxBullets;
                 //Debug.Log("残弾補充");
             }).AddTo(this);
+    }
+
+    //プレイヤーの行動制限
+    public void Restrict_PlayerMove()
+    {
+        player_move.Freeze_player();
+        player_move.enabled = false;
+        player_move.Unzip_player();
+    }
+
+    //プレイヤーの行動制限解除
+    public void Unrestrict_PlayerMove()
+    {
+        player_move.enabled = true;
     }
 }

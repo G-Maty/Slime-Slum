@@ -28,7 +28,7 @@ public class HomingAction_SlimeMachine : ActionBehaviour {
         if (actionCompleted)
         {
             actionCompleted = false;
-            FinishExecute(true);
+            FinishExecute(true); //必須
         }
     }
 
@@ -41,6 +41,11 @@ public class HomingAction_SlimeMachine : ActionBehaviour {
         yield return new WaitForSeconds(1);
         for (int i = 0; i < shot_count; i++)
         {
+            if (slimemachine.IsBossBreak)
+            {
+                actionCompleted = true;
+                yield break;
+            }
             slimemachine.SlimeMachine_homingshot();
             slimemachine.SEplayOneShot("shot"); //SE
             yield return new WaitForSeconds(shot_cooltime);

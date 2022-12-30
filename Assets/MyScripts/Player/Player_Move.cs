@@ -110,6 +110,7 @@ public class Player_Move: MonoBehaviour
     //この関数を使う前にスクリプトをenable = trueにするのを忘れずに！
     public void Unzip_player() //Freeze_playerとセットで使うのが好ましい
     {
+        //重力の引き継ぎ
         rb.gravityScale = previousGravityScale;
     }
 

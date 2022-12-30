@@ -19,14 +19,18 @@ using UnityEngine.UI;
  *・出現演出呼び出し元
  *・撃破時のイベント呼び出し
  *・SE
+ *・UI管理
  */
 
 public class SlimeMachine : MonoBehaviour
 {
+    //Fungus関係
     [SerializeField] private Flowchart eventFlowchart;
     [SerializeField] private string SlimeMachine_ButtleEndMessage;
     [SerializeField] private string SlimeMachine_TimeUpMessage;
-    public bool IsBossBreak { get; set; }
+
+    public bool IsBossBreak { get; set; } //撃破フラグ
+    private bool isDamage = false;
     private GameManager gameManager;
     private int maxHP;
     private int HP;
@@ -34,12 +38,13 @@ public class SlimeMachine : MonoBehaviour
     private ParameterContainer parameter;
     private SpriteRenderer slimemachine_spr;
     private DeathAction_SlimeMachine deathAction;
-    [SerializeField] private GameObject bulletPrefab;
-    [SerializeField] private GameObject homingbulletPrefab;
+    [SerializeField] private GameObject bulletPrefab; //弾丸(プレハブ)
+    [SerializeField] private GameObject homingbulletPrefab; //追跡弾丸(プレハブ)
     [SerializeField] private Transform shotpoint;
     [SerializeField] private int recoveryHP; //HP回復
     [SerializeField] private int ButtleTimerSet; //制限時間
 
+    //Audio関係
     private AudioSource audioSource;
     [SerializeField] private AudioClip shotSE;
     [SerializeField] private AudioClip damagedSE;
@@ -57,7 +62,7 @@ public class SlimeMachine : MonoBehaviour
         behaviortree = GetComponent<BehaviourTree>();
         parameter = GetComponent<ParameterContainer>();
         slimemachine_spr = GetComponent<SpriteRenderer>();
-        deathAction = GetComponent<DeathAction_SlimeMachine>();
+        deathAction = GetComponent<DeathAction_SlimeMachine>(); //ArborのdeathAction
         audioSource = GetComponent<AudioSource>();
         //初期化
         maxHP = parameter.GetInt("HP", 0);
@@ -69,7 +74,7 @@ public class SlimeMachine : MonoBehaviour
         behaviortree.enabled = false;
         this.gameObject.SetActive(false);
 
-        //少しカクつくか？
+        //Playerがやられたときの処理
         gameManager.playerDeath_observable.Subscribe(_ =>
         {
             HP = HP + recoveryHP;
@@ -133,6 +138,7 @@ public class SlimeMachine : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("PlayerBullet")) //ダメージ処理
         {
+            StartCoroutine(DamageEff());
             parameter.SetInt("HP",HP--); //HP管理
             HPslider.value = parameter.GetInt("HP");
             SEplayOneShot("damage"); //SE
@@ -170,6 +176,23 @@ public class SlimeMachine : MonoBehaviour
             }
         }
         BossInitialization(); //時間切れの処理
+    }
+
+    IEnumerator DamageEff()
+    {
+        if (isDamage)
+        {
+            yield break;
+        }
+        isDamage = true;
+        for(int i = 0; i < 3; i++)
+        {
+            slimemachine_spr.enabled = false;
+            yield return new WaitForSeconds(0.05f);
+            slimemachine_spr.enabled = true;
+            yield return new WaitForSeconds(0.05f);
+        }
+        isDamage = false;
     }
 
     public void SEplayOneShot(string str)
