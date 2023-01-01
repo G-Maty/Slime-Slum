@@ -40,6 +40,7 @@ public class WalkAction_SlimeMachine : ActionBehaviour {
         sequence.Append(BossCanvas.transform.DOScaleX(1, 0)); //キャンバスの反転を防ぐ
         sequence.Play().OnStart(() => anim.SetBool("walk", true)).OnUpdate(() =>
         {
+            //アニメーション中に撃破された場合、アニメーションを削除
             if (slimeMachine.IsBossBreak)
             {
                 sequence.Kill();

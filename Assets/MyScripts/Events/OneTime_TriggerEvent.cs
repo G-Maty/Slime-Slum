@@ -7,6 +7,7 @@ using Fungus;
  * 一度きりのイベント発生トリガー
  * イベントが発生すると自身のアクティブをFalseにすることで
  * 二度と呼ばれないようにする
+ * イベント発生時、スライムを強制的に下状態にしたい
  */
 
 public class OneTime_TriggerEvent : MonoBehaviour
@@ -47,18 +48,14 @@ public class OneTime_TriggerEvent : MonoBehaviour
         gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
 
         isTalking = true;
+        gameManager.DefaltCondition_Player(); //Playerをデフォルトの状態へ
         gameManager.Restrict_PlayerMove(); //Player硬直
-        //player_move.Freeze_player(); //Player硬直
-        //player_move.enabled = false; //移動を制限
-        //player_move.Unzip_player(); //Player解凍（以前の重力等を引き継ぎ）
-
 
         eventFlowchart.SendFungusMessage(sendMessage); //フローチャートにメッセージを送信して特定のイベント（ブロック）開始
         yield return new WaitUntil(() => eventFlowchart.GetExecutingBlocks().Count == 0); //イベント（ブロック）が終了するまで待つ
 
         isTalking = false;
-        this.gameObject.SetActive(false); //イベント発生を防ぐ
+        this.gameObject.SetActive(false); //イベント再発生を防ぐ
         gameManager.Unrestrict_PlayerMove(); //Player解凍
-        //player_move.enabled = true; //移動の制限解除
     }
 }

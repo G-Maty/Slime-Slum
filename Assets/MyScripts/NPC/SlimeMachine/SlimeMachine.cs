@@ -93,12 +93,13 @@ public class SlimeMachine : MonoBehaviour
 
     }
 
-
+    //’ÊíUŒ‚
     public void SlimeMachine_shot() //Arbor‘¤‚ÅŒÄ‚Ño‚µ
     {
         Instantiate(bulletPrefab, shotpoint.position, shotpoint.rotation);
     }
 
+    //“ÁêUŒ‚
     public void SlimeMachine_homingshot() //Arbor‘¤‚ÅŒÄ‚Ño‚µ
     {
         Instantiate(homingbulletPrefab, shotpoint.position, shotpoint.rotation);

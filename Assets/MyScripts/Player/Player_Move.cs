@@ -36,7 +36,6 @@ public class Player_Move: MonoBehaviour
     [SerializeField] private AudioClip recoverySE;
     [SerializeField] private AudioClip emptySE;
 
-
     //shot関係
     [SerializeField]
     private string AttackKeyCode = "space";
@@ -53,7 +52,6 @@ public class Player_Move: MonoBehaviour
     //接地判定関係
     [SerializeField] private LayerMask groundLayer; //for GroundCheck
     
-
     //ダメージ処理通知
     private Subject<Unit> _warpCheckPoint = new Subject<Unit>();
     public IObservable<Unit> warpCheckPoint_observable => _warpCheckPoint;
@@ -68,9 +66,6 @@ public class Player_Move: MonoBehaviour
     private bool UIcounter = false;
     [SerializeField]
     private GameObject recovery_eff;
-
-
-
 
 
     // Start is called before the first frame update
@@ -114,6 +109,16 @@ public class Player_Move: MonoBehaviour
         rb.gravityScale = previousGravityScale;
     }
 
+    //プレイヤーを強制的に下地面接地アイドル状態へ
+    public void DefaltCondition_player()
+    {
+        //重力3、isupフラグfalse,下Idleアニメーションへ
+        rb.gravityScale = 3f;
+        isup = false;
+        isJump = false;
+        anim.SetTrigger("event_idle");
+    }
+
     void Movement()
     {
         float x = Input.GetAxis("Horizontal");
@@ -150,7 +155,6 @@ public class Player_Move: MonoBehaviour
         {
             Freeze_player();
         }
-
     }
 
     void Direction(float inputX) //スケールを変える方法だと弾が右方向にしか飛ばないため
@@ -411,6 +415,7 @@ public class Player_Move: MonoBehaviour
         }
     }
 
+    //プレイヤーの当たり判定
     private void OnCollisionEnter2D(UnityEngine.Collision2D collision)
     {
         if (collision.gameObject.CompareTag("Trap") || collision.gameObject.CompareTag("Enemy"))
@@ -418,5 +423,4 @@ public class Player_Move: MonoBehaviour
             Damage();
         }
     }
-
 }

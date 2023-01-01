@@ -148,14 +148,20 @@ public class GameManager : SingletonMonoBehaviour<GameManager>
     //プレイヤーの行動制限
     public void Restrict_PlayerMove()
     {
-        player_move.Freeze_player();
-        player_move.enabled = false;
-        player_move.Unzip_player();
+        player_move.Freeze_player(); //Player硬直
+        player_move.enabled = false; //移動制限
+        player_move.Unzip_player(); //硬直解除
     }
 
     //プレイヤーの行動制限解除
     public void Unrestrict_PlayerMove()
     {
-        player_move.enabled = true;
+        player_move.enabled = true; //移動制限解除
+    }
+
+    //プレイヤーを強制的に下地面接地アイドル状態へ
+    public void DefaltCondition_Player()
+    {
+        player_move.DefaltCondition_player();
     }
 }
